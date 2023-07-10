@@ -39,7 +39,7 @@ Remember, it's always a good practice to verify the decoded text after sharing t
 
 No specific installation is required, as the project comprises HTML files that can be opened in any modern web browser. To run it locally, follow these steps:
 
-1. Clone this repository to your local machine using `git clone <repository-link>`.
+1. Clone this repository to your local machine using `git clone <https://github.com/AKurtz87/data-matrix-endoder-decoder.git>`.
 2. Navigate to the directory containing the cloned project using your terminal.
 3. Open the HTML files in your preferred browser.
 
