@@ -1,4 +1,4 @@
-# Data Matrix 32x32 Encoder/Decoder
+# Data Matrix Encoder/Decoder
 
 ## Project Description
 This repository contains a web application that converts text data into a 32x32 bit data matrix, allowing users to download the image of the matrix. The application also includes a decoding feature where users can upload a data matrix image and retrieve the text within.
