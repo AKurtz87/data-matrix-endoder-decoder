@@ -21,6 +21,9 @@ The project is designed with an intuitive user interface that makes the process 
     - Click the 'Create' button to convert your text into a 32x32 data matrix. The generated matrix is displayed on the screen.
        
     - After creating the data matrix, a 'Download' button will appear. Click this button to download the image of your matrix.
+ 
+<img width="1307" alt="Screenshot 2023-07-10 at 19 32 52" src="https://github.com/AKurtz87/data-matrix-endoder-decoder/assets/91114967/e080c7f6-2a41-4355-8be6-00c9e706e4de">
+
 
 - **Decoding**
     - Navigate to the Decoder page.
@@ -28,6 +31,9 @@ The project is designed with an intuitive user interface that makes the process 
     - Click the 'Upload' button and select the image of the data matrix you wish to decode.
        
     - The application will decode the text from the data matrix and display it in a text area on the page.
+ 
+<img width="1251" alt="Screenshot 2023-07-10 at 19 33 31" src="https://github.com/AKurtz87/data-matrix-endoder-decoder/assets/91114967/147f54e5-8448-4e88-b57c-d5f91a4cfec9">
+
        
 - **Important Note on Image Sharing**
 
