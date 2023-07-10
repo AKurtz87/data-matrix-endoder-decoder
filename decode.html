@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Canvas Grid</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100vh;
+        margin: 50px;
+        background-color: #f3c2c2;
+      }
+
+      #container {
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 90%;
+        border: 2px solid black;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+
+      h1,
+      h3 {
+        text-align: center;
+        margin: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Data Matrix 32x32 Decoder</h1>
+    <h3>Decoded text will appear in the following text area:</h3>
+    <div id="textContainer">
+      <textarea id="resultTextArea" rows="5" cols="100"></textarea>
+    </div>
+    <div id="container">
+      <input type="file" id="upload" accept="image/*" />
+      <canvas id="canvas" width="680" height="680"></canvas>
+    </div>
+
+    <script>
+      document.getElementById("resultTextArea").style.display = "none";
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      var squareSize = 20; // Size of squares
+      var gridNum = 680 / squareSize; // Number of squares on each side of the canvas
+
+      document
+        .getElementById("upload")
+        .addEventListener("change", function (e) {
+          var img = new Image();
+          img.onload = function () {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            analyzeCanvas();
+          };
+          img.src = URL.createObjectURL(e.target.files[0]);
+        });
+
+      function analyzeCanvas() {
+        // Get the image data and decode the canvas
+        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        var result = decodeCanvas(imageData, squareSize);
+        displayValues(result);
+      }
+
+      // Function to check if pixel is black
+      function isPixelBlack(imageData, x, y) {
+        var index = (x + y * imageData.width) * 4;
+        return imageData.data[index] === 0;
+      }
+
+      // Provided functions
+      function majorityBits(obj) {
+        let result = {};
+
+        for (let key in obj) {
+          if (obj.hasOwnProperty(key)) {
+            let arr = obj[key];
+            let intervalLength = Math.floor(arr.length / 32);
+            let newArray = [];
+
+            let currentValue = arr[0];
+            let count = 0;
+
+            for (let i = 0; i < arr.length; i++) {
+              if (arr[i] === currentValue) {
+                count++;
+              } else {
+                currentValue = arr[i];
+                count = 1;
+              }
+
+              if (count === intervalLength) {
+                newArray.push(currentValue);
+                count = 0; // Reset count for the next interval
+              }
+            }
+
+            result[key] = newArray;
+          }
+        }
+
+        return result;
+      }
+
+      function decodeCanvas(imageData, squareSize) {
+        var result = {};
+        var lastRow = null;
+        var lastRowCount = 0;
+
+        for (var y = 21; y < imageData.height - 20; y++) {
+          var row = [];
+          var currentPixelColor = isPixelBlack(imageData, 0, y); // true for black, false for white
+
+          for (var x = 21; x < imageData.width - 20; x++) {
+            var isBlack = isPixelBlack(imageData, x, y);
+            if (x % squareSize === 0 && x !== 0) {
+              // Add the value to the row array every square's pixels
+              row.push(currentPixelColor ? 1 : 0);
+              currentPixelColor = isBlack; // Update the currentPixelColor for the next group of 8 pixels
+            } else if (isBlack !== currentPixelColor) {
+              currentPixelColor = isBlack;
+            }
+          }
+          // Add the last group of 8 pixels
+          row.push(currentPixelColor ? 1 : 0);
+
+          // If the row is equal to the lastRow, increment lastRowCount
+          if (JSON.stringify(row) === JSON.stringify(lastRow)) {
+            lastRowCount++;
+          } else {
+            lastRowCount = 0;
+          }
+
+          // If lastRowCount is 4 or more, add the row to the result object and reset lastRowCount
+          if (lastRowCount >= 4) {
+            result[`Row ${y}`] = row;
+            lastRowCount = 0;
+          }
+
+          // Update lastRow
+          lastRow = row;
+        }
+
+        var finalResult = removeConsecutiveDuplicates(result);
+        return finalResult;
+      }
+
+      function removeConsecutiveDuplicates(object) {
+        var finalResult = {};
+        var lastValue = null;
+
+        for (var key in object) {
+          if (JSON.stringify(object[key]) !== JSON.stringify(lastValue)) {
+            finalResult[key] = object[key];
+            lastValue = object[key];
+          }
+        }
+
+        return majorityBits(finalResult);
+      }
+
+      function displayValues(result) {
+        var outputArray = [];
+
+        for (var key in result) {
+          outputArray.push({
+            byte: "Byte " + (outputArray.length + 1),
+            values: result[key],
+          });
+        }
+
+        //console.log(typeof outputArray);
+        //console.log(outputArray[0].values);
+        getValues(outputArray);
+      }
+
+      function getValues(outputArray) {
+        let newArray = outputArray.map((obj) => obj.values).flat();
+        console.log(newArray);
+        binaryArrayToString(newArray);
+      }
+
+      function binaryArrayToString(newArray) {
+        let result = "";
+
+        for (let i = 0; i < newArray.length; i += 8) {
+          let binaryGroup = newArray.slice(i, i + 8);
+          let binaryString = binaryGroup.join("");
+          let ascii = parseInt(binaryString, 2);
+          result += String.fromCharCode(ascii);
+        }
+
+        // Get the textarea element by its ID and set its value to the result string
+        document.getElementById("resultTextArea").value = result;
+        document.getElementById("resultTextArea").style.display = "block";
+      }
+    </script>
+  </body>
+</html>

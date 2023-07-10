@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Canvas Grid</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100vh;
+        margin: 50px;
+        background-color: #9becc3;
+      }
+      #container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 90%;
+        border: 2px solid black;
+        padding: 10px;
+        box-sizing: border-box;
+      }
+      #inputText {
+        width: 300px;
+        height: 110px;
+        min-width: 100px;
+        max-width: 680px;
+      }
+
+      h1,
+      h3 {
+        text-align: center;
+        margin: 5px;
+      }
+
+      #downloadButton {
+        margin-top: 25px;
+      }
+
+      .button-container {
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Data Matrix 32x32 Encoder</h1>
+    <h3>Max encode lenght 128 chars</h3>
+
+    <div id="container">
+      <canvas id="canvas" width="680" height="680"></canvas>
+      <textarea id="inputText" maxlength="128"></textarea>
+      <div class="button-container">
+        <button id="submitButton">Create</button>
+        <button id="downloadButton">Download</button>
+      </div>
+    </div>
+
+    <script>
+      // To initially hide the button
+      document.getElementById("downloadButton").style.display = "none";
+
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      var squareSize = 20; // Size of squares
+      var gridNum = 680 / squareSize; // Number of squares on each side of the canvas
+
+      function stringToBinary(input) {
+        var output = "";
+        for (var i = 0; i < input.length; i++) {
+          let binary = input[i].charCodeAt(0).toString(2);
+          output += ("00000000" + binary).slice(-8); // ensures 8-bit binary for every character
+        }
+        return output;
+      }
+
+      document
+        .getElementById("submitButton")
+        .addEventListener("click", function () {
+          var input = document.getElementById("inputText").value;
+          console.log(input);
+          drawSquares(input);
+          document.getElementById("downloadButton").style.display = "block";
+        });
+
+      function drawSquares(inputString) {
+        var binaryString = stringToBinary(inputString);
+        console.log(binaryString);
+        var index = 0;
+
+        // Color the squares
+        for (let j = 0; j < gridNum; j++) {
+          for (let i = 0; i < gridNum; i++) {
+            // Border condition
+            if (i === 0 || j === gridNum - 1) {
+              ctx.fillStyle = "#000"; // Black
+            } else if (j === 0 || i === gridNum - 1) {
+              ctx.fillStyle = (i + j) % 2 === 0 ? "#000" : "#FFF"; // Black for even sum, white for odd sum
+            }
+            // Assignment from binary string
+            else {
+              // Fill based on binary string if it has not been exhausted
+              if (index < binaryString.length) {
+                if (binaryString[index] === "1") {
+                  ctx.fillStyle = "#000"; // Black
+                } else {
+                  ctx.fillStyle = "#FFF"; // White
+                }
+                index++;
+              }
+              // Fill remaining squares with white
+              else {
+                ctx.fillStyle = "#FFF"; // White
+              }
+            }
+            // Draw and color the square
+            ctx.fillRect(
+              i * squareSize,
+              j * squareSize,
+              squareSize,
+              squareSize
+            );
+          }
+        }
+      }
+
+      drawSquares(""); // Draw initial empty grid
+
+      document
+        .getElementById("downloadButton")
+        .addEventListener("click", function () {
+          // Generate image URL
+          var imageURL = canvas.toDataURL("image/png");
+
+          // Create download link
+          var link = document.createElement("a");
+          link.download = "canvas_image.png";
+          link.href = imageURL;
+
+          // Click the link to start the download
+          link.click();
+        });
+    </script>
+  </body>
+</html>
